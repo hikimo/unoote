@@ -1,0 +1,1 @@
+exports.logo = require('./icons/logo.png')
