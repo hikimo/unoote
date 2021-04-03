@@ -4,6 +4,8 @@ const light_theme = {
   bgPrimaryDarken: '#16a085',
 
   btnPrimary: '#3498db',
+  btnDanger: '#e74c3c',
+  btnWarn: '#f1c40f',
 
   borderGray: '#bdc3c7',
 
@@ -17,6 +19,8 @@ const dark_theme = {
   bgPrimaryDarken: '#161c23',
 
   btnPrimary: '#3498db',
+  btnDanger: '#e74c3c',
+  btnWarn: '#f1c40f',
 
   borderGray: '#bdc3c7',
   

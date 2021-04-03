@@ -3,7 +3,7 @@ import { getThemeColor } from '../../../assets/colors'
 import { Text, StyleSheet } from 'react-native'
 import { fonts } from '../../../assets/fonts'
 
-export default function Typography({ style = [], children, weight, type, theme }) {
+export function Typography({ style = [], children, weight, type, theme }) {
   const styles = getStyles(theme)
   let textStyles
 

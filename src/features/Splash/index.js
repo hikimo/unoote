@@ -3,7 +3,7 @@ import { ActivityIndicator, Image, SafeAreaView, StatusBar, StyleSheet, View } f
 import { getThemeColor } from '../../assets/colors'
 
 import { logo } from '../../assets/images'
-import Typography from '../../components/shared/Typography'
+import { Typography } from '../../components/shared'
 
 function Splash({ navigation }) {
   const styles = getStyles('light')
@@ -23,7 +23,7 @@ function Splash({ navigation }) {
         </View>
 
         <ActivityIndicator size='large' color={getThemeColor().light} style={styles.loader} />
-        <Typography style={styles.greeter}>Looking for your notes</Typography>
+        <Typography style={styles.greeter}>Looking for the latest notes</Typography>
       </SafeAreaView>
     </>
   )

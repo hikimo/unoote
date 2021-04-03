@@ -1,12 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { View, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, TextInput, Image } from 'react-native'
 import { getThemeColor } from '../../assets/colors'
-import { fonts } from '../../assets/fonts'
 import { logo } from '../../assets/images'
-import Typography from '../../components/shared/Typography'
+import { Button, Checkbox, InputBox, Typography } from '../../components/shared'
 
 function Welcome({ navigation }) {
   const styles = getStyles('light')
+  const [keep, setKeep] = useState(false)
 
   return (
     <>
@@ -19,13 +19,13 @@ function Welcome({ navigation }) {
         </View>
 
         <View style={styles.formContainer}>
-          <View style={styles.boxField}>
-            <TextInput style={styles.boxFieldText} placeholder='Your name'  />
-          </View>
+          
+          <InputBox />
 
-          <TouchableOpacity style={styles.btn}>
-            <Typography style={styles.btnLabel} type='title' weight='bold'>Confirm</Typography>
-          </TouchableOpacity>
+          <Checkbox theme='light' label='Keep me logged in' active={keep} onPress={() => setKeep(!keep)} />
+
+          <Button theme='light' label="Confirmed" />
+          
         </View>
       </SafeAreaView>
     </>
@@ -56,36 +56,11 @@ function getStyles(theme) {
     formContainer: {
       marginTop: 10,
       padding: 20,
+      paddingBottom: 10,
       width: '100%',
       backgroundColor: getThemeColor(theme).light,
       borderTopLeftRadius: 20,
       borderBottomRightRadius: 20
-    },
-
-    boxField: {
-      paddingVertical: 2,
-      paddingHorizontal: 10,
-      backgroundColor: getThemeColor(theme).light,
-      borderWidth: 1,
-      borderColor: getThemeColor(theme).borderGray,
-      borderRadius: 10
-    },
-    boxFieldText: {
-      fontSize: 14,
-      fontFamily: fonts.openSans.regular.normal,
-      color: getThemeColor(theme).dark
-    },
-
-    btn: {
-      marginVertical: 10,
-      alignItems: 'center',
-      paddingHorizontal: 15,
-      paddingVertical: 10,
-      backgroundColor: getThemeColor(theme).btnPrimary,
-      borderRadius: 5,
-    },
-    btnLabel: {
-      color: getThemeColor(theme).light
     }
   })
 }
