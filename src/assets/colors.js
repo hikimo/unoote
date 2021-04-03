@@ -1,7 +1,7 @@
 const light_theme = {
   // Colors
-  bgPrimary: '#1abc9c',
-  bgPrimaryDarken: '#16a085',
+  bgPrimary: '#e67e22',
+  bgPrimaryDarken: '#d35400',
 
   btnPrimary: '#3498db',
   btnDanger: '#e74c3c',

@@ -3,7 +3,7 @@ import { StyleSheet, TextInput, View } from 'react-native'
 import { fonts } from '../../../assets/fonts'
 import { getThemeColor } from '../../../assets/colors'
 
-export function InputBox({ theme = 'light', onChangeText, value, textStyle = [], contentContainerStyle = [] }) {
+export function InputBox({ multiline = false, theme = 'light', onChangeText, placeholder, value, textStyle = [], contentContainerStyle = [] }) {
   const styles = getStyles(theme)
 
   let textStyles
@@ -23,7 +23,14 @@ export function InputBox({ theme = 'light', onChangeText, value, textStyle = [],
     
   return (
     <View style={containerStyles}>
-      <TextInput onChangeText={text => _changeTextHandler(text)} style={textStyles} value={value} placeholder='Your name'  />
+      <TextInput
+        multiline={multiline}
+        onChangeText={text => _changeTextHandler(text)} style={textStyles}
+        value={value}
+        placeholder={placeholder}
+        numberOfLines={multiline ? 4 : 1}
+        textAlignVertical={multiline ? 'top' : 'center'}
+      />
     </View>
   )
 }

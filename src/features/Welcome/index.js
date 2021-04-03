@@ -25,7 +25,7 @@ function Welcome({ navigation }) {
 
         <View style={styles.formContainer}>
           
-          <InputBox onChangeText={_inputBoxNameHandler} value={name} />
+          <InputBox onChangeText={_inputBoxNameHandler} value={name} placeholder='Your name' />
 
           <Checkbox theme='light' label='Keep me logged in' active={keep} onPress={() => setKeep(!keep)} />
 
