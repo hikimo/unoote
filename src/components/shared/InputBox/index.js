@@ -10,18 +10,18 @@ export function InputBox({ theme = 'light', onKeyPress, value, textStyle = [], c
   let containerStyles
 
   if(Array.isArray(contentContainerStyle))
-    containerStyles = [styles.btn, ...contentContainerStyle]
+    containerStyles = [styles.boxField, ...contentContainerStyle]
   else
-    containerStyles = [styles.btn, contentContainerStyle]
+    containerStyles = [styles.boxField, contentContainerStyle]
 
   if(Array.isArray(textStyle))
-    textStyles = [styles.btnLabel, ...textStyle]
+    textStyles = [styles.boxFieldText, ...textStyle]
   else
-    textStyles = [styles.btnLabel]
+    textStyles = [styles.boxFieldText]
     
   return (
-    <View style={styles.boxField}>
-      <TextInput onKeyPress={onKeyPress} style={styles.boxFieldText} value={value} placeholder='Your name'  />
+    <View style={containerStyles}>
+      <TextInput onKeyPress={onKeyPress} style={textStyles} value={value} placeholder='Your name'  />
     </View>
   )
 }
