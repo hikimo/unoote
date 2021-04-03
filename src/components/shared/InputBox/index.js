@@ -3,11 +3,13 @@ import { StyleSheet, TextInput, View } from 'react-native'
 import { fonts } from '../../../assets/fonts'
 import { getThemeColor } from '../../../assets/colors'
 
-export function InputBox({ theme = 'light', onKeyPress, value, textStyle = [], contentContainerStyle = [] }) {
+export function InputBox({ theme = 'light', onChangeText, value, textStyle = [], contentContainerStyle = [] }) {
   const styles = getStyles(theme)
 
   let textStyles
   let containerStyles
+
+  const _changeTextHandler = (text) => onChangeText(text)
 
   if(Array.isArray(contentContainerStyle))
     containerStyles = [styles.boxField, ...contentContainerStyle]
@@ -21,7 +23,7 @@ export function InputBox({ theme = 'light', onKeyPress, value, textStyle = [], c
     
   return (
     <View style={containerStyles}>
-      <TextInput onKeyPress={onKeyPress} style={textStyles} value={value} placeholder='Your name'  />
+      <TextInput onChangeText={text => _changeTextHandler(text)} style={textStyles} value={value} placeholder='Your name'  />
     </View>
   )
 }

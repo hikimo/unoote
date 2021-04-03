@@ -1,17 +1,22 @@
 import React, { useState } from 'react'
-import { View, TouchableOpacity, SafeAreaView, StatusBar, StyleSheet, TextInput, Image } from 'react-native'
-import { getThemeColor } from '../../assets/colors'
-import { logo } from '../../assets/images'
+import { View, SafeAreaView, ImageBackground, StatusBar, StyleSheet, Image } from 'react-native'
 import { Button, Checkbox, InputBox, Typography } from '../../components/shared'
+import { bgImage, logo } from '../../assets/images'
+import { getThemeColor } from '../../assets/colors'
+import { routes } from '../../navigation/MainNavigation'
 
 function Welcome({ navigation }) {
   const styles = getStyles('light')
   const [keep, setKeep] = useState(false)
+  const [name, setName] = useState('')
 
+  const _btnConfirmHandler = () => navigation.replace(routes.notes)
+  const _inputBoxNameHandler = (text) => setName(text)
+  
   return (
     <>
-      <StatusBar backgroundColor={getThemeColor().bgPrimary} />
-      <SafeAreaView style={styles.container}>
+      <StatusBar backgroundColor='transparent' translucent={true}   />
+      <ImageBackground source={bgImage} style={styles.container}>
         <View style={styles.titleContainer}>
           <Image source={logo} style={styles.logo} resizeMode='contain' />
           
@@ -20,14 +25,14 @@ function Welcome({ navigation }) {
 
         <View style={styles.formContainer}>
           
-          <InputBox />
+          <InputBox onChangeText={_inputBoxNameHandler} value={name} />
 
           <Checkbox theme='light' label='Keep me logged in' active={keep} onPress={() => setKeep(!keep)} />
 
-          <Button theme='light' label="Confirmed" />
+          <Button onPress={_btnConfirmHandler} theme='light' label="Confirm" />
           
         </View>
-      </SafeAreaView>
+      </ImageBackground>
     </>
   )
 }
@@ -38,7 +43,8 @@ function getStyles(theme) {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: getThemeColor(theme).bgPrimary,
+      resizeMode: 'cover',
+      backgroundColor: getThemeColor(theme).bgPrimary
     },
     titleContainer: {
       alignItems: 'center',

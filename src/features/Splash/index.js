@@ -4,13 +4,14 @@ import { getThemeColor } from '../../assets/colors'
 
 import { logo } from '../../assets/images'
 import { Typography } from '../../components/shared'
+import { routes } from '../../navigation/MainNavigation'
 
 function Splash({ navigation }) {
   const styles = getStyles('light')
 
   useEffect(() => {
     setTimeout(() => {
-      navigation.replace('Welcome')
+      navigation.replace(routes.welcome)
     }, 2500)
   }, [])
   

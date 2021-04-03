@@ -41,6 +41,8 @@ function getStyles(theme) {
     },
     checkbox: {
       marginRight: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
       padding: 2,
       height: 24,
       width: 24,
@@ -52,7 +54,8 @@ function getStyles(theme) {
       borderColor: getThemeColor(theme).bgPrimaryDarken
     },
     checkboxInner: {
-      flex: 1,
+      height: 19,
+      width: 19,
       backgroundColor: getThemeColor(theme).bgPrimaryDarken,
       borderRadius: 3
     },
