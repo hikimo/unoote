@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { View, SafeAreaView, StatusBar, StyleSheet, TouchableOpacity, Modal, Text, TouchableWithoutFeedback } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import Icon from 'react-native-vector-icons/AntDesign'
 
@@ -7,16 +9,32 @@ import { Typography, Button } from '../../components/shared'
 import { routes } from '../../navigation/MainNavigation'
 import { getThemeColor } from '../../assets/colors'
 
-function Notes({ navigation }) {
+import { SET_NAME } from '../../redux/_types/name'
 
+function Notes({ navigation }) {
+  const styles = getStyles('light')
+
+  // States
   const [modalVisible, setModal] = useState({
     content: false,
     change: false,
     delete: false
   })
 
-  const styles = getStyles('light')
+  // Selectors
+  const name = useSelector(state => state.name.name)
+
+  // Dispatcher
+  const dispatch = useDispatch()
+
+  // Event handlers
   const _btnAddHandler = () => navigation.navigate(routes.notesForm, { title: 'Note Form' })
+  const _btnChangeNameConfirmHandler = async () => {
+    // Empty state name & Cached name
+    await AsyncStorage.removeItem('uname')
+    dispatch({type: SET_NAME, payload: ''})
+    navigation.replace(routes.welcome)
+  }
 
   return (
     <>
@@ -24,7 +42,7 @@ function Notes({ navigation }) {
       <SafeAreaView style={styles.container}>
 
         <View style={styles.header}>
-          <Typography theme='dark' type='title' style={styles.title}>Hello, Rangga!</Typography>
+          <Typography theme='dark' type='title' style={styles.title}>Hello, {name}!</Typography>
           <Button theme='light' variant='danger' label='Change Name' onPress={() => setModal({...modalVisible, change: true})} />
         </View>
 
@@ -83,7 +101,7 @@ function Notes({ navigation }) {
 
             <View style={styles.modalBtnContainer}>
               <Button theme='light' label='Cancel' variant='warn' onPress={() => setModal({...modalVisible, change: false})} />
-              <Button contentContainerStyle={styles.ml10} theme='light' label='Sure' onPress={() => navigation.replace(routes.welcome)} />
+              <Button contentContainerStyle={styles.ml10} theme='light' label='Sure' onPress={_btnChangeNameConfirmHandler}/>
             </View>
 
           </View>

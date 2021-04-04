@@ -1,19 +1,32 @@
 import React, { useEffect } from 'react'
 import { ActivityIndicator, Image, SafeAreaView, StatusBar, StyleSheet, View } from 'react-native'
-import { getThemeColor } from '../../assets/colors'
+import { useDispatch } from 'react-redux'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
+import { getThemeColor } from '../../assets/colors'
 import { logo } from '../../assets/images'
 import { Typography } from '../../components/shared'
 import { routes } from '../../navigation/MainNavigation'
+import { SET_NAME } from '../../redux/_types/name'
 
 function Splash({ navigation }) {
   const styles = getStyles('light')
 
+  // Dispatcher
+  const dispatch = useDispatch()
+  
   useEffect(() => {
-    setTimeout(() => {
-      navigation.replace(routes.welcome)
-    }, 2500)
+    checkStorage()
   }, [])
+
+  const checkStorage = async () => {
+    const uname = await AsyncStorage.getItem('uname')
+    console.log(uname)
+    if(uname || uname !== null) {
+      dispatch({ type: SET_NAME, payload: uname })
+      navigation.replace(routes.notes)
+    } else navigation.replace(routes.welcome)
+  }
   
   return (
     <>

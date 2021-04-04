@@ -1,16 +1,34 @@
 import React, { useState } from 'react'
+import { useDispatch } from 'react-redux'
 import { View, ImageBackground, StatusBar, StyleSheet, Image } from 'react-native'
 import { Button, Checkbox, InputBox, Typography } from '../../components/shared'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
 import { bgImage, logo } from '../../assets/images'
 import { getThemeColor } from '../../assets/colors'
 import { routes } from '../../navigation/MainNavigation'
+import { SET_NAME } from '../../redux/_types/name'
 
 function Welcome({ navigation }) {
   const styles = getStyles('light')
+  
+  const dispatch = useDispatch()
+
   const [keep, setKeep] = useState(false)
   const [name, setName] = useState('')
 
-  const _btnConfirmHandler = () => navigation.replace(routes.notes)
+  const _btnConfirmHandler = async () => {
+    if(name !== '') {
+      // Cache name if checked
+      if(keep) await AsyncStorage.setItem('uname', name)
+      
+      dispatch({ type: SET_NAME, payload: name })
+      navigation.replace(routes.notes)
+      return
+    }
+
+    alert('Name is still empty!')
+  }
   const _inputBoxNameHandler = (text) => setName(text)
   
   return (
