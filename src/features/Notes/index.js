@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { View, SafeAreaView, StatusBar, StyleSheet, TouchableOpacity, Modal, Text, TouchableWithoutFeedback } from 'react-native'
+import { FlatList, View, SafeAreaView, StatusBar, StyleSheet, TouchableOpacity, Modal, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import Icon from 'react-native-vector-icons/AntDesign'
@@ -10,30 +10,212 @@ import { routes } from '../../navigation/MainNavigation'
 import { getThemeColor } from '../../assets/colors'
 
 import { SET_NAME } from '../../redux/_types/name'
+import { SET_LOADING, GET_NOTES, GET_NOTES_ERROR, SET_LOADING_MORE, SET_NOTES_END, GET_MORE_NOTES, SET_PAGE_NOTE, RESET_PAGE_NOTE, SET_LOADING_REFRESH, RESTART_NOTE } from '../../redux/_types/note'
+import { requestNoteAPI } from '../../api/noteAPI'
+
+const convertDate = (date) => {
+  const temp = new Date(date)
+
+  return `${temp.getDate() < 10 ? '0' + temp.getDate() : temp.getDate()}.${temp.getMonth() < 10 ? '0' + temp.getMonth() : temp.getMonth()}.${temp.getFullYear()}`
+}
+
+function NoteList({ item, viewPress, editPress, deletePress }) {
+  const styles = getStyles('light')
+
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardTop}>
+        <View style={styles.cardTitleContainer}>
+          <Typography weight='bold' style={styles.cardTitle}>{item.title}</Typography>
+        </View>
+        <View style={styles.cardTag}>
+          <Typography theme='dark' type='title' weight='bold' style={styles.cardTagTitle}>{item.tags}</Typography>
+        </View>
+      </View>
+      <View style={styles.cardBottom}>
+        <View>
+          <Typography type='title' style={styles.cardDesc}>{item.name} | {convertDate(item.createdAt)}</Typography>
+        </View>
+        <View style={styles.cardActions}>
+          <TouchableOpacity style={styles.cardActionBtn} onPress={viewPress}>
+            <Icon name='eye' style={styles.cardActionBtnIcon} />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.cardActionBtn, styles.ml10]} onPress={editPress}>
+            <Icon name='edit' style={styles.cardActionBtnIcon} />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.cardActionBtn, styles.ml10]} onPress={deletePress}>
+            <Icon name='delete' style={styles.cardActionBtnIcon} />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  )
+}
+
+function Loading() {
+  const styles = getStyles('light')
+
+  return (
+    <View style={styles.centerContainer}>
+      <ActivityIndicator style={styles.loadingLoader} size='large' color={getThemeColor('light').bgPrimary} />
+      <Typography>Loading</Typography>
+    </View>
+  )
+}
+
+function Error({ empty, reload }) {
+  const styles = getStyles('light')
+
+  let text = 'Something went wrong!'
+  if (empty) text = 'There\'s still nothing here,\nlet\'s create a new one by clicking the blue round button at the bottom right of the corner.'
+
+  return (
+    <View style={styles.centerContainer}>
+      <Typography style={styles.textCenter}>{text}</Typography>
+      { !empty && (<Button theme='light' contentContainerStyle={styles.mt10} onPress={reload} label='Try Again' />)}
+    </View>
+  )
+}
+
+function ListFooter(loading) {
+  if(loading) {
+    return (
+      <View style={
+        {
+          paddingVertical: 20,
+          width: '100%',
+          alignItems: 'center'
+        }
+      }>
+        <ActivityIndicator color={getThemeColor('light').bgPrimary} size='large' />
+      </View>
+    ) 
+  } 
+  return (
+    <View style={
+      {
+        paddingVertical: 20,
+        width: '100%',
+        alignItems: 'center'
+      }
+    }>
+      <Typography>The end of line</Typography>
+    </View>
+  )
+}
 
 function Notes({ navigation }) {
   const styles = getStyles('light')
 
-  // States
+  // Local State
   const [modalVisible, setModal] = useState({
     content: false,
     change: false,
     delete: false
   })
+  const [selectedNote, setSelectedNote] = useState({
+    title: '',
+    name: '',
+    detail: '',
+    tags: '',
+    createdAt: ''
+  })
 
   // Selectors
   const name = useSelector(state => state.name.name)
+  const note = useSelector(state => {
+    console.log(state.note.page)
+    return state.note
+  })
 
   // Dispatcher
   const dispatch = useDispatch()
+
+  useEffect(() => {
+    getNotes()
+  }, [])
+
+  const getNotes = async (more = false, refresh = false) => {
+    if (!more) {
+      if(refresh) dispatch({ type: SET_LOADING_REFRESH, payload: true })
+      else dispatch({ type: SET_LOADING, payload: true })
+      dispatch({ type: RESTART_NOTE })
+
+      dispatch({ type: RESET_PAGE_NOTE })
+
+      const params = `?page=0&limit=10`
+      dispatch({ type: SET_PAGE_NOTE })
+
+      const payload = await requestNoteAPI(params)
+
+      if (payload) {
+        dispatch({ type: GET_NOTES, payload: payload.data.data })
+        if(refresh) dispatch({ type: SET_LOADING_REFRESH, payload: false })
+        return
+      }
+
+      dispatch({ type: GET_NOTES_ERROR })
+      return
+    }
+
+    if (more) {
+      
+      dispatch({ type: SET_LOADING_MORE, payload: true })
+      
+      const params = `?page=${note.page}&limit=10`
+      const payload = await requestNoteAPI(params)
+      
+      if (payload) {
+        
+        if (payload.data.data.length < 10) {
+          dispatch({ type: SET_NOTES_END })
+        }
+        if (payload.data.data.length === 0) {
+          dispatch({ type: SET_NOTES_END })
+          return
+        } else {
+          dispatch({ type: SET_PAGE_NOTE })
+        }
+        dispatch({ type: GET_MORE_NOTES, payload: payload.data.data })
+      }
+    }
+  }
 
   // Event handlers
   const _btnAddHandler = () => navigation.navigate(routes.notesForm, { title: 'Note Form' })
   const _btnChangeNameConfirmHandler = async () => {
     // Empty state name & Cached name
     await AsyncStorage.removeItem('uname')
-    dispatch({type: SET_NAME, payload: ''})
+    dispatch({ type: SET_NAME, payload: '' })
+    setModal({ ...modalVisible, change: false })
     navigation.replace(routes.welcome)
+  }
+  const _btnDetailHandler = (item) => {
+    setSelectedNote({
+      name: item.name,
+      title: item.title,
+      tags: item.tags,
+      detail: item.detail,
+      createdAt: item.createdAt
+    })
+
+    setModal({ ...modalVisible, content: true })
+  }
+  const _btnEditHandler = () => {
+    navigation.navigate(routes.notesForm, { title: 'Edit Hikimo note' })
+  }
+  const _btnDeleteHandler = () => {
+    setModal({ ...modalVisible, delete: true })
+  }
+  const _refreshHandler = () => {
+    getNotes(false, true)
+  }
+  const _loadMoreHandler = () => {
+    if (!note.end && !note.loadingMore) {
+      getNotes(true)
+    }
   }
 
   return (
@@ -43,40 +225,41 @@ function Notes({ navigation }) {
 
         <View style={styles.header}>
           <Typography theme='dark' type='title' style={styles.title}>Hello, {name}!</Typography>
-          <Button theme='light' variant='danger' label='Change Name' onPress={() => setModal({...modalVisible, change: true})} />
+          <Button theme='light' variant='danger' label='Change Name' onPress={() => setModal({ ...modalVisible, change: true })} />
         </View>
 
         <View style={styles.listContainer}>
-
-          <View style={styles.card}>
-            <View style={styles.cardTop}>
-              <View style={styles.cardTitleContainer}>
-                <Typography weight='bold' style={styles.cardTitle}>Create a new app hey hey hey hey hey</Typography>
-              </View>
-              <View style={styles.cardTag}>
-                <Typography theme='dark' type='title' weight='bold' style={styles.cardTagTitle}>TODO</Typography>
-              </View>
-            </View>
-            <View style={styles.cardBottom}>
-              <View>
-                <Typography type='title' style={styles.cardDesc}>Hikimo | 07 Jun 2021</Typography>
-              </View>
-              <View style={styles.cardActions}>
-                <TouchableOpacity style={styles.cardActionBtn} onPress={() => setModal({ ...modalVisible, content: true })}>
-                  <Icon name='eye' style={styles.cardActionBtnIcon} />
-                </TouchableOpacity>
-
-                <TouchableOpacity style={[styles.cardActionBtn, styles.ml10]} onPress={() => navigation.navigate(routes.notesForm, { title: 'Edit Hikimo note' })}>
-                  <Icon name='edit' style={styles.cardActionBtnIcon} />
-                </TouchableOpacity>
-
-                <TouchableOpacity style={[styles.cardActionBtn, styles.ml10]} onPress={() => setModal({ ...modalVisible, delete: true })}>
-                  <Icon name='delete' style={styles.cardActionBtnIcon} />
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-
+          {
+            note.loading ? <Loading />
+              : (
+                note.error ? <Error reload={getNotes} />
+                  : (
+                    note.data?.length ?
+                      (
+                        <FlatList
+                          contentContainerStyle={styles.listContainerFlat}
+                          data={note.data}
+                          renderItem={({ item }) => (
+                            <NoteList
+                              key={item.id}
+                              item={item}
+                              viewPress={() => _btnDetailHandler(item)}
+                              editPress={_btnEditHandler}
+                              deletePress={() => _btnDeleteHandler()} />
+                          )}
+                          keyExtractor={item => item.id}
+                          onRefresh={_refreshHandler}
+                          refreshing={note.loadingRefresh}
+                          onEndReached={_loadMoreHandler}
+                          onEndReachedThreshold={0.5}
+                          initialNumToRender={10}
+                          ListFooterComponent={ListFooter(note.loadingMore)}
+                        />
+                      )
+                      : <Error empty />
+                  )
+              )
+          }
         </View>
 
         <TouchableOpacity onPress={_btnAddHandler} style={styles.fab} >
@@ -100,8 +283,8 @@ function Notes({ navigation }) {
             </View>
 
             <View style={styles.modalBtnContainer}>
-              <Button theme='light' label='Cancel' variant='warn' onPress={() => setModal({...modalVisible, change: false})} />
-              <Button contentContainerStyle={styles.ml10} theme='light' label='Sure' onPress={_btnChangeNameConfirmHandler}/>
+              <Button theme='light' label='Cancel' variant='warn' onPress={() => setModal({ ...modalVisible, change: false })} />
+              <Button contentContainerStyle={styles.ml10} theme='light' label='Sure' onPress={_btnChangeNameConfirmHandler} />
             </View>
 
           </View>
@@ -124,8 +307,8 @@ function Notes({ navigation }) {
             </View>
 
             <View style={styles.modalBtnContainer}>
-              <Button theme='light' label='Cancel' variant='warn' onPress={() => setModal({...modalVisible, delete: false})} />
-              <Button contentContainerStyle={styles.ml10} theme='light' label='Sure' variant='danger' onPress={() => setModal({...modalVisible, delete: false})} />
+              <Button theme='light' label='Cancel' variant='warn' onPress={() => setModal({ ...modalVisible, delete: false })} />
+              <Button contentContainerStyle={styles.ml10} theme='light' label='Sure' variant='danger' onPress={() => setModal({ ...modalVisible, delete: false })} />
             </View>
 
           </View>
@@ -148,23 +331,20 @@ function Notes({ navigation }) {
             </TouchableOpacity>
 
             <View>
-              <Typography weight='bold' style={styles.modalCardTitle}>Create a new app ni ha kotae wa dokoni</Typography>
+              <Typography weight='bold' style={styles.modalCardTitle}>{selectedNote.title}</Typography>
               <Typography type='title' style={styles.modalCardTitleSub}>
-                Noted by Hikimo
+                {selectedNote.name} | {convertDate(selectedNote.createdAt)}
               </Typography>
 
               <View style={styles.modalCardMiddle}>
                 <View style={styles.modalCardTag}>
-                  <Typography theme='dark' weight='bold' type='title' style={styles.modalCardTagText}>TODO</Typography>
+                  <Typography theme='dark' weight='bold' type='title' style={styles.modalCardTagText}>{selectedNote.tags}</Typography>
                 </View>
               </View>
             </View>
 
             <View>
-              <Typography>
-                lorem ipsum dolor sit amet lorem ipsum dolor sit amet
-                lorem ipsum dolor sit amet lorem ipsum dolor sit amet
-              </Typography>
+              <Typography>{selectedNote.detail}</Typography>
             </View>
 
           </View>
@@ -195,7 +375,11 @@ function getStyles(theme) {
 
 
     listContainer: {
-      margin: 20
+      flex: 1
+    },
+
+    listContainerFlat: {
+      padding: 20
     },
 
     card: {
@@ -330,8 +514,20 @@ function getStyles(theme) {
       justifyContent: 'center'
     },
 
+    centerContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+    loadingLoader: {
+      marginBottom: 10
+    },
+
     textCenter: {
       textAlign: 'center'
+    },
+    mt10: {
+      marginTop: 10
     },
     ml10: {
       marginLeft: 10
