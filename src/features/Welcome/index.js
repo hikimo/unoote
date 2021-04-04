@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { View, SafeAreaView, ImageBackground, StatusBar, StyleSheet, Image } from 'react-native'
+import { View, ImageBackground, StatusBar, StyleSheet, Image } from 'react-native'
 import { Button, Checkbox, InputBox, Typography } from '../../components/shared'
 import { bgImage, logo } from '../../assets/images'
 import { getThemeColor } from '../../assets/colors'

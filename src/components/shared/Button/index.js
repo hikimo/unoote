@@ -28,7 +28,7 @@ export function Button({ theme = 'light' | 'dark' , onPress, label, textStyle = 
   return (
     <TouchableOpacity onPress={onPress} disabled={disabled}>
       <View style={containerStyles}>
-        <Typography style={textStyles} type='title' weight='bold'>{label}</Typography>
+        <Typography theme={theme} style={textStyles} type='title' weight='bold'>{label}</Typography>
       </View>
     </TouchableOpacity>
   )
