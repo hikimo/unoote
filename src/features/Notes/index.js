@@ -19,7 +19,7 @@ const convertDate = (date) => {
   return `${temp.getDate() < 10 ? '0' + temp.getDate() : temp.getDate()}.${temp.getMonth() < 10 ? '0' + temp.getMonth() : temp.getMonth()}.${temp.getFullYear()}`
 }
 
-function NoteList({ item, viewPress, editPress, deletePress }) {
+function NoteList({ item, viewPress, editPress }) {
   const styles = getStyles('light')
 
   return (
@@ -45,9 +45,6 @@ function NoteList({ item, viewPress, editPress, deletePress }) {
             <Icon name='edit' style={styles.cardActionBtnIcon} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.cardActionBtn, styles.ml10]} onPress={deletePress}>
-            <Icon name='delete' style={styles.cardActionBtnIcon} />
-          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -203,11 +200,8 @@ function Notes({ navigation }) {
 
     setModal({ ...modalVisible, content: true })
   }
-  const _btnEditHandler = () => {
-    navigation.navigate(routes.notesForm, { title: 'Edit Hikimo note' })
-  }
-  const _btnDeleteHandler = () => {
-    setModal({ ...modalVisible, delete: true })
+  const _btnEditHandler = (name) => {
+    navigation.navigate(routes.notesForm, { title: `Edit ${name}'s note` })
   }
   const _refreshHandler = () => {
     getNotes(false, true)
@@ -244,8 +238,7 @@ function Notes({ navigation }) {
                               key={item.id}
                               item={item}
                               viewPress={() => _btnDetailHandler(item)}
-                              editPress={_btnEditHandler}
-                              deletePress={() => _btnDeleteHandler()} />
+                              editPress={() => _btnEditHandler(item.name)} />
                           )}
                           keyExtractor={item => item.id}
                           onRefresh={_refreshHandler}
