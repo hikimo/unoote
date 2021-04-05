@@ -2,7 +2,7 @@ import Axios from 'axios'
 
 export function api() {
   return Axios.create({
-    baseURL: 'http://192.168.1.8:3000',
+    baseURL: 'https://u-noote-server.herokuapp.com',
     headers: {
       'Content-Type': 'application/json'
     }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
 import { FlatList, View, SafeAreaView, StatusBar, StyleSheet, TouchableOpacity, Modal, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
+import { useIsFocused } from '@react-navigation/core'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import Icon from 'react-native-vector-icons/AntDesign'
@@ -10,15 +11,28 @@ import { routes } from '../../navigation/MainNavigation'
 import { getThemeColor } from '../../assets/colors'
 
 import { SET_NAME } from '../../redux/_types/name'
-import { SET_LOADING, GET_NOTES, GET_NOTES_ERROR, SET_LOADING_MORE, SET_NOTES_END, GET_MORE_NOTES, SET_PAGE_NOTE, RESET_PAGE_NOTE, SET_LOADING_REFRESH, RESTART_NOTE } from '../../redux/_types/note'
+import { 
+  SET_LOADING,
+  GET_NOTES,
+  GET_NOTES_ERROR,
+  SET_LOADING_MORE,
+  SET_NOTES_END,
+  GET_MORE_NOTES,
+  SET_PAGE_NOTE,
+  RESET_PAGE_NOTE,
+  SET_LOADING_REFRESH,
+  RESTART_NOTE
+} from '../../redux/_types/note'
 import { requestNoteAPI } from '../../api/noteAPI'
 
+// Local helper to convert date into a formated string date (dd.mm.yyyy)
 const convertDate = (date) => {
   const temp = new Date(date)
 
   return `${temp.getDate() < 10 ? '0' + temp.getDate() : temp.getDate()}.${temp.getMonth() < 10 ? '0' + temp.getMonth() : temp.getMonth()}.${temp.getFullYear()}`
 }
 
+// Note list to render on FlatList
 function NoteList({ item, viewPress, editPress }) {
   const styles = getStyles('light')
 
@@ -51,6 +65,7 @@ function NoteList({ item, viewPress, editPress }) {
   )
 }
 
+// Render component for login ( local )
 function Loading() {
   const styles = getStyles('light')
 
@@ -62,6 +77,7 @@ function Loading() {
   )
 }
 
+// To render error
 function Error({ empty, reload }) {
   const styles = getStyles('light')
 
@@ -76,28 +92,19 @@ function Error({ empty, reload }) {
   )
 }
 
+// Render for footer with loading logic
 function ListFooter(loading) {
+  const styles = getStyles('light')
+  
   if(loading) {
     return (
-      <View style={
-        {
-          paddingVertical: 20,
-          width: '100%',
-          alignItems: 'center'
-        }
-      }>
+      <View style={styles.footerContainer}>
         <ActivityIndicator color={getThemeColor('light').bgPrimary} size='large' />
       </View>
     ) 
   } 
   return (
-    <View style={
-      {
-        paddingVertical: 20,
-        width: '100%',
-        alignItems: 'center'
-      }
-    }>
+    <View style={styles.footerContainer}>
       <Typography>The end of line</Typography>
     </View>
   )
@@ -120,21 +127,22 @@ function Notes({ navigation }) {
     createdAt: ''
   })
 
+  // Used to check focus
+  const isFocused = useIsFocused()
+
   // Selectors
   const name = useSelector(state => state.name.name)
-  const note = useSelector(state => {
-    console.log(state.note.page)
-    return state.note
-  })
+  const note = useSelector(state => state.note)
 
   // Dispatcher
   const dispatch = useDispatch()
 
   useEffect(() => {
     getNotes()
-  }, [])
+  }, [isFocused])
 
   const getNotes = async (more = false, refresh = false) => {
+    // Will fetched on first load, reload and pull on refresh only
     if (!more) {
       if(refresh) dispatch({ type: SET_LOADING_REFRESH, payload: true })
       else dispatch({ type: SET_LOADING, payload: true })
@@ -157,6 +165,7 @@ function Notes({ navigation }) {
       return
     }
 
+    // Will hit only on edge scrolling reached
     if (more) {
       
       dispatch({ type: SET_LOADING_MORE, payload: true })
@@ -200,8 +209,15 @@ function Notes({ navigation }) {
 
     setModal({ ...modalVisible, content: true })
   }
-  const _btnEditHandler = (name) => {
-    navigation.navigate(routes.notesForm, { title: `Edit ${name}'s note` })
+  const _btnEditHandler = (name, item) => {
+    const data = {
+      id: item.id,
+      name: item.name,
+      title: item.title,
+      detail: item.detail,
+      tags: item.tags
+    }
+    navigation.navigate(routes.notesForm, { title: `Edit ${name}'s note`, data })
   }
   const _refreshHandler = () => {
     getNotes(false, true)
@@ -238,7 +254,7 @@ function Notes({ navigation }) {
                               key={item.id}
                               item={item}
                               viewPress={() => _btnDetailHandler(item)}
-                              editPress={() => _btnEditHandler(item.name)} />
+                              editPress={() => _btnEditHandler(item.name, item)} />
                           )}
                           keyExtractor={item => item.id}
                           onRefresh={_refreshHandler}
@@ -507,6 +523,11 @@ function getStyles(theme) {
       justifyContent: 'center'
     },
 
+    footerContainer: {
+      paddingVertical: 20,
+      alignItems: 'center',
+      width: '100%'
+    },
     centerContainer: {
       flex: 1,
       justifyContent: 'center',

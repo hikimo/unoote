@@ -21,7 +21,6 @@ function Splash({ navigation }) {
 
   const checkStorage = async () => {
     const uname = await AsyncStorage.getItem('uname')
-    console.log(uname)
     if(uname || uname !== null) {
       dispatch({ type: SET_NAME, payload: uname })
       navigation.replace(routes.notes)
