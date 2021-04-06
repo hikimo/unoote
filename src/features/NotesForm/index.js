@@ -39,15 +39,16 @@ function NotesForm({ navigation }) {
       })
     }
   }
-  const checkStorage = async () => {
+  const checkName = async () => {
     if (!route.params.data) {
-      const uname = await AsyncStorage.getItem('uname')
-      setVal('name', uname)
+      setVal('name', route.params.name)
+    } else {
+      setVal('name', route.params.data.name)
     }
   }
 
   useEffect(() => {
-    checkStorage()
+    checkName()
     checkRoute()
   }, [])
 

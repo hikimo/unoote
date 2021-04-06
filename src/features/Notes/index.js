@@ -190,7 +190,7 @@ function Notes({ navigation }) {
   }
 
   // Event handlers
-  const _btnAddHandler = () => navigation.navigate(routes.notesForm, { title: 'Note Form' })
+  const _btnAddHandler = () => navigation.navigate(routes.notesForm, { title: 'Note Form', name })
   const _btnChangeNameConfirmHandler = async () => {
     // Empty state name & Cached name
     await AsyncStorage.removeItem('uname')
